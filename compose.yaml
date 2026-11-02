@@ -1,0 +1,17 @@
+services:
+  cat-id:
+    container_name: cat-id
+    build: .
+    restart: unless-stopped
+    # MQTT_*, LABELS, MIN_SCORE etc. come from .env (copy .env.example)
+    env_file: .env
+    environment:
+      # paths INSIDE the container - change the volume sources below, not these
+      FRIGATE_DB: /frigate-config/frigate.db
+      DATASET_DIR: /dataset
+    volumes:
+      # rw so SQLite can take its WAL read lock; opened read-only at the SQL layer
+      - ${FRIGATE_CONFIG_DIR:-./frigate/config}:/frigate-config
+      # the label store: <frigate media>/clips/<Name>/dataset (one folder per class)
+      - ${FRIGATE_DATASET_DIR:-./frigate/media/clips/Pets/dataset}:/dataset:ro
+      - /etc/localtime:/etc/localtime:ro
